@@ -18,6 +18,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'email',
             'password',
             'password_confirm',
+            'is_mentor',
         )
 
     def validate(self, attrs):
