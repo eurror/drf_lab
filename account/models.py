@@ -5,6 +5,17 @@ from django.utils.crypto import get_random_string
 from slugify import slugify
 
 
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            return ValueError('email is required')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=50, unique=True)
@@ -18,6 +29,12 @@ class User(AbstractUser):
     date_joined = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(max_length=50, unique=True)
     activation_code = models.CharField(max_length=10, default=get_random_string(10))
+
+    objects = UserManager()
+
+    EMAIL_FIELD = 'email'
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
         return self.username
