@@ -3,13 +3,20 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 
-from .serializers import RegistrationSerializer
+from . import serializers
 
 
 User = get_user_model()
 
 class RegistrationView(generics.CreateAPIView):
-    serializer_class = RegistrationSerializer
+    serializer_class = serializers.RegistrationSerializer
+
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+
+class MentorRegistrationView(generics.CreateAPIView):
+    serializer_class = serializers.MentorRegistrationSerializer
 
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
