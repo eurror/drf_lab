@@ -1,6 +1,7 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 
 from . import serializers
@@ -39,3 +40,18 @@ class ActivationView(APIView):
         user.is_active = True
         user.save()
         return Response('Account is activated', status=200)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = serializers.ChangePasswordSerializer(
+            data=request.data, context={'request': request}
+        )
+        if serializer.is_valid(raise_exception=True):
+            serializer.set_new_password()
+            message = 'You successfully changed your password'
+        else:
+            message = 'You entered wrong password'
+        return Response(message)

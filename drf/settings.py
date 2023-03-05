@@ -107,7 +107,7 @@ REST_FRAMEWORK = {
 
 JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER': 'path.to.custom_response_handler',
-    'JWT_EXPIRATION_DELTA': timedelta(days=7),
+    'JWT_EXPIRATION_DELTA': timedelta(minutes=99999999),
     'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7),
 }
 

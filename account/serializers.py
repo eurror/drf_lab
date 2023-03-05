@@ -57,3 +57,39 @@ class MentorRegistrationSerializer(serializers.ModelSerializer):
     def update(self, validated_data):
         user = User.objects.update(**validated_data)
         return user
+
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField(
+        min_length=4, required=True
+    )
+    new_password = serializers.CharField(
+        min_length=4, required=True
+    )
+    new_password_confirm = serializers.CharField(
+        min_length=4, required=True
+    )
+
+    class Meta:
+        model = User
+        fields = ('old_password', 'new_password', 'new_password_confirm')
+
+    def validate(self, attrs):
+        new_password = attrs.get("new_password")
+        new_password_confirm = attrs.pop('new_password_confirm')
+        if new_password != new_password_confirm:
+            raise serializers.ValidationError('Password don\'t match')
+        return attrs
+
+    def validate_old_password(self, old_password):
+        user = self.context['request'].user
+
+        if not user.check_password(old_password):
+            raise serializers.ValidationError('You entered wrong password')
+        return old_password
+
+    def set_new_password(self):
+        user = self.context['request'].user
+        new_password = self.validated_data.get('new_password')
+        user.set_password(new_password)
+        user.save()
