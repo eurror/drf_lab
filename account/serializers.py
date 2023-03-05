@@ -13,11 +13,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'username',
             'email',
             'password',
+            'is_mentor',
         )
 
     def create(self, validated_data):
-        user = User.objects.create_user(is_active=True, **validated_data)
-        # send_activation_code(user.email, user.activation_code)
+        user = User.objects.create_user(**validated_data)
+        send_activation_code(user.email, user.activation_code)
         return user
 
 
@@ -48,11 +49,11 @@ class MentorRegistrationSerializer(serializers.ModelSerializer):
             'username',
             'email',
             'password',
+            'is_mentor',
             'experience',
             'audience',
         )
 
-    def create(self, validated_data):
-        user = User.objects.create_user(is_mentor=True, **validated_data)
-        # send_activation_code(user.email, user.activation_code)
+    def update(self, validated_data):
+        user = User.objects.update(**validated_data)
         return user

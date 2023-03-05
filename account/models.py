@@ -6,7 +6,7 @@ from slugify import slugify
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, email, password=None, is_mentor=False, **extra_fields):
         if not email:
             return ValueError('email is required')
         email = self.normalize_email(email)
