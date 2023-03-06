@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.utils.crypto import get_random_string
 
-from .utils import send_activation_code
+from .utils import send_activation_code, send_recovery_code
 
 
 User = get_user_model()
@@ -92,4 +93,49 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         new_password = self.validated_data.get('new_password')
         user.set_password(new_password)
+        user.save()
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, email):
+        if not User.objects.filter(email=email).exists():
+            raise serializers.ValidationError("User doesn't exist")
+        return email
+
+    def send_verification_code(self):
+        email = self.validated_data.get("email")
+        user = User.objects.get(email=email)
+        user.activation_code = get_random_string(10)
+        user.save()
+        send_recovery_code(email=email, activation_code=user.activation_code)
+
+
+class ForgotPasswordCompleteSerializer(serializers.Serializer):
+    password = serializers.CharField(required=True, min_length=5)
+    password_confirm = serializers.CharField(required=True, min_length=5)
+
+    def validate(self, attrs):
+        email = self.context.get('email')
+        activation_code = self.context.get('activation_code')
+        password = attrs.get("password")
+        password_confirm = attrs.get("password_confirm")
+
+        try:
+            User.objects.get(email=email, activation_code=activation_code)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("This user doesn't exist")
+
+        if password != password_confirm:
+            raise serializers.ValidationError("Password don't match")
+
+        return attrs
+
+    def set_new_password(self):
+        email = self.context.get('email')
+        password = self.validated_data.get("password")
+        user = User.objects.filter(email=email).first()
+        user.set_password(password)
+        user.activation_code = ''
         user.save()

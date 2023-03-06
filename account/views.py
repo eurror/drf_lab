@@ -55,3 +55,21 @@ class ChangePasswordView(APIView):
         else:
             message = 'You entered wrong password'
         return Response(message)
+
+
+class ForgotPasswordView(APIView):
+    def post(self, request):
+        serializer = serializers.ForgotPasswordSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.send_verification_code()
+            return Response("We've sent you activation code to your email")
+
+
+class ForgotPasswordCompleteView(APIView):
+    def post(self, request, email, activation_code):
+        context = {'email': email, "activation_code": activation_code}
+        serializer = serializers.ForgotPasswordCompleteSerializer(
+            data=request.data, context=context)
+        if serializer.is_valid(raise_exception=True):
+            serializer.set_new_password()
+            return Response('Your password succesfully changed')

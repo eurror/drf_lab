@@ -20,3 +20,22 @@ def send_activation_code(email, activation_code):
         html_message=html_message,
         fail_silently=False
     )
+
+
+def send_recovery_code(email, activation_code):
+    context = {
+        'text_detail': 'you requested password recovery',
+        'email': email,
+        'domain': 'http://localhost:8000/',
+        'activation_code': activation_code,
+    }
+    html_message = render_to_string('password_recovery.html', context)
+    message = strip_tags(html_message)
+    send_mail(
+        'Password recovery',
+        message,
+        'edgarpo0401@gmail.com',
+        [email],
+        html_message=html_message,
+        fail_silently=False
+    )
