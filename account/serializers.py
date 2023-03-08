@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils.crypto import get_random_string
 
-from .utils import send_activation_code, send_recovery_code
+from .tasks import send_activation_code_celery, send_recovery_code_celery
 
 
 User = get_user_model()
@@ -19,7 +19,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
-        send_activation_code(user.email, user.activation_code)
+        send_activation_code_celery.delay(user.email, user.activation_code)
         return user
 
 
@@ -109,7 +109,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
         user = User.objects.get(email=email)
         user.activation_code = get_random_string(10)
         user.save()
-        send_recovery_code(email=email, activation_code=user.activation_code)
+        send_recovery_code_celery.delay(email=email, activation_code=user.activation_code)
 
 
 class ForgotPasswordCompleteSerializer(serializers.Serializer):
