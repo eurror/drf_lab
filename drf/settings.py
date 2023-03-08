@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     #additional
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_yasg',
     #my apps
     'account',
     'course',
